@@ -1,6 +1,7 @@
 require 'bundler/setup'
 
 require 'minitest/autorun'
+require "minitest/reporters"
 require 'mocha/mini_test'
 require 'timecop'
 require 'business_time'
@@ -10,15 +11,16 @@ require 'logger'
 require 'erb'
 require 'pry'
 
-# This makes sure that Minitest::Test exists when an older version of Minitest
-# (i.e. 4.x) is required by ActiveSupport.
-unless defined?(Minitest::Test)
-  Minitest::Test = MiniTest::Unit::TestCase
-end
+require_relative 'helpers/holiday_helpers.rb'
 
+Minitest::Reporters.use! Minitest::Reporters::ProgressReporter.new(detailed_skip: !!ENV["CI"])
 
-class Minitest::Test
+class ActiveSupport::TestCase
   include ActiveShipping
+
+  def logger
+    @logger ||= Logger.new(STDERR)
+  end
 end
 
 module ActiveShipping::Test
@@ -92,7 +94,8 @@ module ActiveShipping::Test
         :tshirts => Package.new(10 * 16, nil, :units => :imperial),
         :shipping_container => Package.new(2200000, [2440, 2600, 6058], :description => '20 ft Standard Container', :units => :metric),
         :largest_gold_bar => Package.new(250000, [45.5, 22.5, 17], :value => 15300000),
-        :books => Package.new(64, [4, 8, 6], :units => :imperial, :value => 15300000, :description => 'Books')
+        :books => Package.new(64, [4, 8, 6], :units => :imperial, :value => 15300000, :description => 'Books'),
+        :multiple_packages => [Package.new(25000, [45.5, 22.5, 17], :value => 15300000),Package.new(25000, [45.5, 22.5, 17], :value => 15300000),Package.new(25000, [45.5, 22.5, 17], :value => 15300000),Package.new(25000, [45.5, 22.5, 17], :value => 15300000),Package.new(25000, [45.5, 22.5, 17], :value => 15300000), Package.new(25000, [45.5, 22.5, 17], :value => 15300000),Package.new(25000, [45.5, 22.5, 17], :value => 15300000)]
       }
     end
 

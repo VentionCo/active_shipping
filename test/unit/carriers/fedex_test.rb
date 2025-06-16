@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class FedExTest < Minitest::Test
+class FedExTest < ActiveSupport::TestCase
   include ActiveShipping::Test::Fixtures
 
   def setup
@@ -144,8 +144,8 @@ class FedExTest < Minitest::Test
     rate = response.rates.first
     assert_equal 'FedEx', rate.carrier
     assert_equal 'USD', rate.currency
-    assert_instance_of Fixnum, rate.total_price
-    assert_instance_of Fixnum, rate.price
+    assert_kind_of Integer, rate.total_price
+    assert_kind_of Integer, rate.price
     assert_instance_of String, rate.service_name
     assert_instance_of String, rate.service_code
     assert_instance_of Array, rate.package_rates
@@ -177,8 +177,8 @@ class FedExTest < Minitest::Test
     rate = response.rates.first
     assert_equal 'FedEx', rate.carrier
     assert_equal 'CAD', rate.currency
-    assert_instance_of Fixnum, rate.total_price
-    assert_instance_of Fixnum, rate.price
+    assert_kind_of Integer, rate.total_price
+    assert_kind_of Integer, rate.price
     assert_instance_of String, rate.service_name
     assert_instance_of String, rate.service_code
     assert_instance_of Array, rate.package_rates
@@ -605,14 +605,23 @@ class FedExTest < Minitest::Test
 
   def test_create_shipment_reference
     packages = package_fixtures.values_at(:wii)
-    packages.each {|p| p.options[:reference_numbers] = [{:value => "FOO-123"}] }
+    packages.each do |p|
+      p.options[:reference_numbers] = [
+        { :value => "FOO-123"},
+        { :type => "INVOICE_NUMBER", :value => "BAR-456" }
+      ]
+    end
 
     result = Nokogiri::XML(@carrier.send(:build_shipment_request,
                                          location_fixtures[:beverly_hills],
                                          location_fixtures[:annapolis],
                                          packages,
                                          :test => true))
-    assert_equal result.search('RequestedPackageLineItems/CustomerReferences/Value').text, "FOO-123"
+
+    assert_equal result.search('RequestedPackageLineItems/CustomerReferences[first()]/Value').text, "FOO-123"
+    assert_equal result.search('RequestedPackageLineItems/CustomerReferences[first()]/CustomerReferenceType').text, "CUSTOMER_REFERENCE"
+    assert_equal result.search('RequestedPackageLineItems/CustomerReferences[last()]/Value').text, "BAR-456"
+    assert_equal result.search('RequestedPackageLineItems/CustomerReferences[last()]/CustomerReferenceType').text, "INVOICE_NUMBER"
   end
 
   def test_create_shipment_label_format_option

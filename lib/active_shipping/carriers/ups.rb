@@ -1,5 +1,3 @@
-# -*- encoding: utf-8 -*-
-
 module ActiveShipping
   class UPS < Carrier
     self.retry_safe = true
@@ -50,7 +48,8 @@ module ActiveShipping
     end
 
     DEFAULT_SERVICES = {
-      "01" => "UPS Next Day Air",
+      "00" => "Pickup / Will call",
+      "01" => "UPS Express",
       "02" => "UPS Second Day Air",
       "03" => "UPS Ground",
       "07" => "UPS Worldwide Express",
@@ -511,6 +510,8 @@ module ActiveShipping
     end
 
     def build_delivery_dates_request(origin, destination, packages, pickup_date, options={})
+      packages = packages.flatten
+      
       xml_builder = Nokogiri::XML::Builder.new do |xml|
 
         xml.TimeInTransitRequest do
@@ -525,13 +526,14 @@ module ActiveShipping
             xml.UnitOfMeasurement do
               xml.Code(options[:imperial] ? 'LBS' : 'KGS')
             end
-
             value = packages.inject(0) do |sum, package|
               sum + (options[:imperial] ? package.lbs.to_f : package.kgs.to_f )
             end
 
             xml.Weight([value.round(3), 0.1].max)
           end
+
+          xml.TotalPackagesInShipment(packages.count)
 
           if packages.any? {|package| package.value.present?}
             xml.InvoiceLineTotal do
@@ -938,7 +940,7 @@ module ActiveShipping
         xml.css('ServiceSummary').each do |service_summary|
           # Translate the Time in Transit Codes to the service codes used elsewhere
           service_name = service_summary.at('Service/Description').text
-          service_code = UPS::DEFAULT_SERVICE_NAME_TO_CODE[service_name]
+          service_code = service_summary.at('Service').at('Code').text
           date = Date.strptime(service_summary.at('EstimatedArrival/Date').text, '%Y-%m-%d')
           business_transit_days = service_summary.at('EstimatedArrival/BusinessTransitDays').text.to_i
           delivery_estimates << DeliveryDateEstimate.new(origin, destination, self.class.class_variable_get(:@@name),

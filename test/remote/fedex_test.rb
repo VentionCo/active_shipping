@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class RemoteFedExTest < Minitest::Test
+class RemoteFedExTest < ActiveSupport::TestCase
   include ActiveShipping::Test::Credentials
   include ActiveShipping::Test::Fixtures
 
@@ -33,7 +33,7 @@ class RemoteFedExTest < Minitest::Test
     assert response.rates.length > 0
     response.rates.each do |rate|
       assert_instance_of String, rate.service_name
-      assert_instance_of Fixnum, rate.price
+      assert_kind_of Integer, rate.price
     end
   end
 
@@ -75,7 +75,7 @@ class RemoteFedExTest < Minitest::Test
     assert response.rates.length > 0
     response.rates.each do |rate|
       assert_instance_of String, rate.service_name
-      assert_instance_of Fixnum, rate.price
+      assert_kind_of Integer, rate.price
     end
   end
 
@@ -134,7 +134,7 @@ class RemoteFedExTest < Minitest::Test
     assert response.rates.length > 0
     response.rates.each do |rate|
       assert_instance_of String, rate.service_name
-      assert_instance_of Fixnum, rate.price
+      assert_kind_of Integer, rate.price
     end
   end
 
@@ -149,7 +149,7 @@ class RemoteFedExTest < Minitest::Test
     assert response.rates.length > 0
     response.rates.each do |rate|
       assert_instance_of String, rate.service_name
-      assert_instance_of Fixnum, rate.price
+      assert_kind_of Integer, rate.price
     end
   end
 
@@ -164,7 +164,7 @@ class RemoteFedExTest < Minitest::Test
     assert response.rates.length > 0
     response.rates.each do |rate|
       assert_instance_of String, rate.service_name
-      assert_instance_of Fixnum, rate.price
+      assert_kind_of Integer, rate.price
     end
   end
 
@@ -179,7 +179,7 @@ class RemoteFedExTest < Minitest::Test
     assert response.rates.length > 0
     response.rates.each do |rate|
       assert_instance_of String, rate.service_name
-      assert_instance_of Fixnum, rate.price
+      assert_kind_of Integer, rate.price
     end
   end
 
@@ -194,7 +194,7 @@ class RemoteFedExTest < Minitest::Test
     assert response.rates.length > 0
     response.rates.each do |rate|
       assert_instance_of String, rate.service_name
-      assert_instance_of Fixnum, rate.price
+      assert_kind_of Integer, rate.price
     end
   end
 
